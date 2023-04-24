@@ -1,4 +1,5 @@
 mod lex;
+pub mod lint;
 mod parse;
 
 #[derive(Debug, PartialEq, Eq)]
