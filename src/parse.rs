@@ -1,15 +1,25 @@
 use crate::lex::{TokenKind, TokenStream};
 use crate::Instruction;
 
-/// Possibly adds a repetition number to the passed instruction.
-fn maybe_parse_count(ts: &mut TokenStream<'_>, inst: Instruction) -> Instruction {
-    match ts.peek_kind() {
+/// Possibly modifies the given instruction, by parsing e.g. a repetition number or "in mr" after it
+fn maybe_parse_suffix(ts: &mut TokenStream<'_>, inst: Instruction) -> Instruction {
+    let inst = match ts.peek_kind() {
         Some(TokenKind::Number(n)) => {
             ts.next();
             Instruction::Repeat(inst.into(), n)
         }
         _ => inst,
-    }
+    };
+
+    let inst = match ts.peek_kind() {
+        Some(TokenKind::InMr) => {
+            ts.next();
+            Instruction::IntoMagicRing(inst.into())
+        }
+        _ => inst,
+    };
+
+    inst
 }
 
 /// Parses as many comma-separated instructions into a group as possible.
@@ -45,20 +55,20 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
     };
 
     match next.kind() {
-        Ch => Ok(maybe_parse_count(ts, Instruction::Ch)),
-        Sc => Ok(maybe_parse_count(ts, Instruction::Sc)),
-        Inc => Ok(maybe_parse_count(ts, Instruction::Inc)),
-        Dec => Ok(maybe_parse_count(ts, Instruction::Dec)),
+        Ch => Ok(maybe_parse_suffix(ts, Instruction::Ch)),
+        Sc => Ok(maybe_parse_suffix(ts, Instruction::Sc)),
+        Inc => Ok(maybe_parse_suffix(ts, Instruction::Inc)),
+        Dec => Ok(maybe_parse_suffix(ts, Instruction::Dec)),
         LBracket => {
             let group = parse_group(ts)?;
 
             match ts.next() {
-                Some(t) if t.kind() == RBracket => Ok(maybe_parse_count(ts, group)),
+                Some(t) if t.kind() == RBracket => Ok(maybe_parse_suffix(ts, group)),
                 Some(unexpected) => Err(unexpected.source_loc()),
                 None => Err(ts.current_loc()),
             }
         }
-        RBracket | Comma | Newline | Number(_) => Err(next.source_loc()),
+        RBracket | Comma | Newline | Number(_) | InMr => Err(next.source_loc()),
     }
 }
 

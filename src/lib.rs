@@ -8,6 +8,8 @@ pub enum Instruction {
     Sc,
     Inc,
     Dec,
+    /// Do the given instruction into a magic ring
+    IntoMagicRing(Box<Instruction>),
     Group(Vec<Instruction>),
     Repeat(Box<Instruction>, u32),
 }
@@ -30,6 +32,7 @@ impl Instruction {
             Sc => 1,
             Inc => 1,
             Dec => 2,
+            IntoMagicRing(_) => 0,
             Group(insts) => insts.iter().map(Self::input_count).sum(),
             Repeat(inst, times) => inst.input_count() * times,
         }
@@ -52,6 +55,7 @@ impl Instruction {
             Sc => 1,
             Inc => 2,
             Dec => 1,
+            IntoMagicRing(i) => i.output_count(),
             Group(insts) => insts.iter().map(Self::output_count).sum(),
             Repeat(inst, times) => inst.output_count() * times,
         }
@@ -68,6 +72,7 @@ impl std::fmt::Display for Instruction {
             Sc => write!(f, "sc"),
             Inc => write!(f, "inc"),
             Dec => write!(f, "dec"),
+            IntoMagicRing(i) => write!(f, "{i} in mr"),
             Repeat(g, times) if matches!(g.deref(), Group(_)) => write!(f, "[{}] {}", g, times),
             Repeat(i, times) => write!(f, "{i} {times}"),
             // non-repeated group doesn't need brackets
@@ -105,7 +110,7 @@ mod tests {
     #[test]
     fn test_instruction_display() {
         let sources = [
-            "sc 4, inc, [sc, inc] 2",
+            "sc 4 in mr, inc, [sc, inc] 2",
             "sc, inc, sc 2\n[inc, sc] 3",
         ];
 

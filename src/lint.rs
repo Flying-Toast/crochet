@@ -172,5 +172,13 @@ mod tests {
             [inc, sc] 2
             ",
         );
+
+        no_lints(
+            "
+            sc 6 in mr
+            [sc, inc, sc]2
+            [inc, sc] 4
+            ",
+        );
     }
 }

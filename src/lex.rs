@@ -4,6 +4,7 @@ pub enum TokenKind {
     Sc,
     Inc,
     Dec,
+    InMr,
     Number(u32),
     Newline,
     LBracket,
@@ -134,6 +135,7 @@ impl<'a> TokenStream<'a> {
 
     fn lex_keyword(&mut self) -> Option<Token> {
         let mut keywords = [
+            (b"in mr".as_ref(), TokenKind::InMr),
             (b"inc".as_ref(), TokenKind::Inc),
             (b"dec".as_ref(), TokenKind::Dec),
             (b"sc".as_ref(), TokenKind::Sc),
