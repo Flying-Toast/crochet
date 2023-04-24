@@ -54,8 +54,56 @@ impl Instruction {
     }
 }
 
+impl std::fmt::Display for Instruction {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        use std::ops::Deref;
+        use Instruction::*;
+
+        match self {
+            Sc => write!(f, "sc"),
+            Inc => write!(f, "inc"),
+            Dec => write!(f, "dec"),
+            Repeat(g, times) if matches!(g.deref(), Group(_)) => write!(f, "[{}] {}", g, times),
+            Repeat(i, times) => write!(f, "{i} {times}"),
+            // non-repeated group doesn't need brackets
+            Group(g) => {
+                if !g.is_empty() {
+                    write!(f, "{}", g[0])?;
+                }
+
+                for i in g.iter().skip(1) {
+                    write!(f, ", {i}")?;
+                }
+
+                Ok(())
+            }
+        }
+    }
+}
+
 pub fn parse_rounds(source: &str) -> Result<Vec<Instruction>, (usize, usize)> {
     let mut ts = lex::tokenize(source);
 
     parse::parse(&mut ts)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_instruction_display() {
+        let sources = [
+            "sc 4, inc, [sc, inc] 2",
+            "sc, inc, sc 2\n[inc, sc] 3",
+        ];
+
+        for s in sources {
+            let rounds = parse_rounds(s).unwrap();
+            let rounds = rounds.iter().map(|x| format!("\n{x}"));
+
+            let s2 = rounds.collect::<String>();
+            assert_eq!(&s2[1..], s);
+        }
+    }
 }
