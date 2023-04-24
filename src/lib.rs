@@ -4,6 +4,7 @@ mod parse;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {
+    Ch,
     Sc,
     Inc,
     Dec,
@@ -25,6 +26,7 @@ impl Instruction {
         use Instruction::*;
 
         match self {
+            Ch => 0,
             Sc => 1,
             Inc => 1,
             Dec => 2,
@@ -46,6 +48,7 @@ impl Instruction {
         use Instruction::*;
 
         match self {
+            Ch => 1,
             Sc => 1,
             Inc => 2,
             Dec => 1,
@@ -61,6 +64,7 @@ impl std::fmt::Display for Instruction {
         use Instruction::*;
 
         match self {
+            Ch => write!(f, "ch"),
             Sc => write!(f, "sc"),
             Inc => write!(f, "inc"),
             Dec => write!(f, "dec"),

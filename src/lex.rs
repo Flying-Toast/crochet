@@ -1,5 +1,6 @@
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum TokenKind {
+    Ch,
     Sc,
     Inc,
     Dec,
@@ -136,6 +137,7 @@ impl<'a> TokenStream<'a> {
             (b"inc".as_ref(), TokenKind::Inc),
             (b"dec".as_ref(), TokenKind::Dec),
             (b"sc".as_ref(), TokenKind::Sc),
+            (b"ch".as_ref(), TokenKind::Ch),
         ];
         keywords.sort_by_key(|(x, _)| x.len());
         keywords.reverse();

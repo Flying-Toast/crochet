@@ -156,4 +156,21 @@ mod tests {
             "round 1 consumes 4 stitches but the first round shouldn't consume any stitches"
         );
     }
+
+    fn no_lints(src: &str) {
+        let rounds = parse_rounds(src).unwrap();
+        let lints = lint_rounds(&rounds);
+        assert_eq!(lints, Vec::new());
+    }
+
+    #[test]
+    fn test_no_false_positives_in_lints() {
+        no_lints(
+            "
+            ch 3
+            sc, inc, sc
+            [inc, sc] 2
+            ",
+        );
+    }
 }

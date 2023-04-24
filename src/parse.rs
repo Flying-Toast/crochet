@@ -45,6 +45,7 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
     };
 
     match next.kind() {
+        Ch => Ok(maybe_parse_count(ts, Instruction::Ch)),
         Sc => Ok(maybe_parse_count(ts, Instruction::Sc)),
         Inc => Ok(maybe_parse_count(ts, Instruction::Inc)),
         Dec => Ok(maybe_parse_count(ts, Instruction::Dec)),
