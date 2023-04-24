@@ -13,7 +13,7 @@ pub enum Lint {
         b_idx: usize,
     },
     NonzeroFirstRoundInput {
-        /// How many stitches the first round actually consumed, when it was inspected to consume 0.
+        /// How many stitches the first round actually consumed, when it was exspected to consume 0.
         actual_consumed: u32,
     },
 }

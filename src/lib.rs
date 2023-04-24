@@ -1,6 +1,8 @@
 mod lex;
-pub mod lint;
+mod lint;
 mod parse;
+
+pub use lint::{lint_rounds, Lint};
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {
@@ -20,7 +22,6 @@ impl Instruction {
     /// Example:
     /// ```
     /// # use crochet::Instruction;
-    ///
     /// assert_eq!(Instruction::Inc.input_count(), 1);
     /// assert_eq!(Instruction::Dec.input_count(), 2);
     /// ```
@@ -43,7 +44,6 @@ impl Instruction {
     /// Example:
     /// ```
     /// # use crochet::Instruction;
-    ///
     /// assert_eq!(Instruction::Sc.output_count(), 1);
     /// assert_eq!(Instruction::Inc.output_count(), 2);
     /// ```
@@ -109,10 +109,7 @@ mod tests {
 
     #[test]
     fn test_instruction_display() {
-        let sources = [
-            "sc 4 in mr, inc, [sc, inc] 2",
-            "sc, inc, sc 2\n[inc, sc] 3",
-        ];
+        let sources = ["sc 4 in mr, inc, [sc, inc] 2", "sc, inc, sc 2\n[inc, sc] 3"];
 
         for s in sources {
             let rounds = parse_rounds(s).unwrap();
