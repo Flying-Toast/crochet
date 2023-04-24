@@ -11,7 +11,7 @@ pub enum Instruction {
 
 /// Possibly adds a repetition number to the passed instruction.
 fn maybe_parse_count(ts: &mut TokenStream<'_>, inst: Instruction) -> Instruction {
-    match ts.peek().map(|x| x.kind()) {
+    match ts.peek_kind() {
         Some(TokenKind::Number(n)) => {
             ts.next();
             Instruction::Repeat(inst.into(), n)
@@ -30,9 +30,7 @@ fn parse_group(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> 
     loop {
         insts.push(parse_inst(ts)?);
 
-        let peeked = ts.peek();
-
-        match peeked.map(|x| x.kind()) {
+        match ts.peek_kind() {
             Some(TokenKind::Comma) => ts.next(),
             _ => {
                 if insts.len() == 1 {
@@ -71,7 +69,7 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
 
 /// Parses a list of rounds.
 fn parse(ts: &mut TokenStream<'_>) -> Result<Vec<Instruction>, (usize, usize)> {
-    while let Some(TokenKind::Newline) = ts.peek().map(|x| x.kind()) {
+    while let Some(TokenKind::Newline) = ts.peek_kind() {
         ts.next();
     }
 
@@ -80,7 +78,7 @@ fn parse(ts: &mut TokenStream<'_>) -> Result<Vec<Instruction>, (usize, usize)> {
     while ts.peek().is_some() {
         rounds.push(parse_group(ts)?);
 
-        while let Some(TokenKind::Newline) = ts.peek().map(|x| x.kind()) {
+        while let Some(TokenKind::Newline) = ts.peek_kind() {
             ts.next();
         }
     }

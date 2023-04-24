@@ -52,6 +52,10 @@ impl<'a> TokenStream<'a> {
         self.peeked_token
     }
 
+    pub fn peek_kind(&mut self) -> Option<TokenKind> {
+        self.peek().map(|x| x.kind())
+    }
+
     fn new(source: &'a [u8]) -> Self {
         Self {
             source,
