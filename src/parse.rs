@@ -37,25 +37,27 @@ fn parse_group(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> 
 
 /// Errors if `ts` is empty
 fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
+    use TokenKind::*;
+
     let next = match ts.next() {
         Some(x) => x,
         None => return Err(ts.current_loc()),
     };
 
     match next.kind() {
-        TokenKind::Sc => Ok(maybe_parse_count(ts, Instruction::Sc)),
-        TokenKind::Inc => Ok(maybe_parse_count(ts, Instruction::Inc)),
-        TokenKind::Dec => Ok(maybe_parse_count(ts, Instruction::Dec)),
-        TokenKind::LBracket => {
+        Sc => Ok(maybe_parse_count(ts, Instruction::Sc)),
+        Inc => Ok(maybe_parse_count(ts, Instruction::Inc)),
+        Dec => Ok(maybe_parse_count(ts, Instruction::Dec)),
+        LBracket => {
             let group = parse_group(ts)?;
 
             match ts.next() {
-                Some(t) if t.kind() == TokenKind::RBracket => Ok(maybe_parse_count(ts, group)),
+                Some(t) if t.kind() == RBracket => Ok(maybe_parse_count(ts, group)),
                 Some(unexpected) => Err(unexpected.source_loc()),
                 None => Err(ts.current_loc()),
             }
         }
-        _ => Err(next.source_loc()),
+        RBracket | Comma | Newline | Number(_) => Err(next.source_loc()),
     }
 }
 
