@@ -1,13 +1,5 @@
 use crate::lex::{TokenKind, TokenStream};
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Instruction {
-    Sc,
-    Inc,
-    Dec,
-    Group(Vec<Instruction>),
-    Repeat(Box<Instruction>, u32),
-}
+use crate::Instruction;
 
 /// Possibly adds a repetition number to the passed instruction.
 fn maybe_parse_count(ts: &mut TokenStream<'_>, inst: Instruction) -> Instruction {
@@ -68,7 +60,7 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
 }
 
 /// Parses a list of rounds.
-fn parse(ts: &mut TokenStream<'_>) -> Result<Vec<Instruction>, (usize, usize)> {
+pub fn parse(ts: &mut TokenStream<'_>) -> Result<Vec<Instruction>, (usize, usize)> {
     while let Some(TokenKind::Newline) = ts.peek_kind() {
         ts.next();
     }
