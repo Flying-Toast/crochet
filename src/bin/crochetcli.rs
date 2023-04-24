@@ -16,8 +16,27 @@ fn main() {
 
     let rounds = match crochet::parse_rounds(&source) {
         Ok(r) => r,
-        Err((line, col)) => {
-            eprintln!("Parse error at {line}:{col}");
+        Err((lineno, col)) => {
+            eprintln!("Parse error at {lineno}:{col}");
+
+            let line = source.split("\n").nth(lineno - 1).unwrap();
+            let prefix = format!("{lineno} ");
+
+            let mut lpad = String::with_capacity(prefix.len() + 1);
+            for _ in 0..prefix.len() {
+                lpad.push(' ');
+            }
+            lpad.push('|');
+
+            eprintln!("{lpad}");
+            eprintln!("{prefix}| {line}");
+
+            eprint!("{lpad} ");
+            for _ in 1..col {
+                eprint!(" ");
+            }
+            eprintln!("^");
+
             return;
         }
     };
