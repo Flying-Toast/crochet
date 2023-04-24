@@ -22,6 +22,7 @@ fn maybe_parse_count(ts: &mut TokenStream<'_>, inst: Instruction) -> Instruction
 
 /// Parses as many comma-separated instructions into a group as possible.
 /// Returns the group when it can't parse another instruction into the group.
+/// If the group only has one instruction, do not wrap it in a Group.
 /// Errors if it cannot parse at least one instruction.
 fn parse_group(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
     let mut insts = Vec::new();
@@ -33,7 +34,13 @@ fn parse_group(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> 
 
         match peeked.map(|x| x.kind()) {
             Some(TokenKind::Comma) => ts.next(),
-            _ => return Ok(Instruction::Group(insts)),
+            _ => {
+                if insts.len() == 1 {
+                    return Ok(insts.pop().unwrap());
+                } else {
+                    return Ok(Instruction::Group(insts));
+                }
+            }
         };
     }
 }
@@ -62,6 +69,25 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
     }
 }
 
+/// Parses a list of rounds.
+fn parse(ts: &mut TokenStream<'_>) -> Result<Vec<Instruction>, (usize, usize)> {
+    while let Some(TokenKind::Newline) = ts.peek().map(|x| x.kind()) {
+        ts.next();
+    }
+
+    let mut rounds = Vec::new();
+
+    while ts.peek().is_some() {
+        rounds.push(parse_group(ts)?);
+
+        while let Some(TokenKind::Newline) = ts.peek().map(|x| x.kind()) {
+            ts.next();
+        }
+    }
+
+    Ok(rounds)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -80,5 +106,29 @@ mod tests {
         let mut ts = crate::lex::tokenize("[inc 2, sc] 3");
         let ast = Repeat(Group(vec![Repeat(Inc.into(), 2), Sc]).into(), 3);
         assert_eq!(parse_inst(&mut ts), Ok(ast));
+    }
+
+    #[test]
+    fn test_simple_rounds() {
+        use Instruction::*;
+
+        let mut ts = crate::lex::tokenize("sc\nsc 2, inc");
+        let rounds = vec![Sc, Group(vec![Repeat(Sc.into(), 2), Inc])];
+        assert_eq!(parse(&mut ts), Ok(rounds));
+    }
+
+    #[test]
+    fn test_empty_line_round() {
+        use Instruction::*;
+
+        let mut ts = crate::lex::tokenize("\n\n\nsc 2\ninc\n\nsc 123");
+        let rounds = vec![Repeat(Sc.into(), 2), Inc, Repeat(Sc.into(), 123)];
+        assert_eq!(parse(&mut ts), Ok(rounds));
+    }
+
+    #[test]
+    fn test_unexpected_token() {
+        let mut ts = crate::lex::tokenize("\nsc 2, ]");
+        assert_eq!(parse(&mut ts), Err((2, 7)));
     }
 }
