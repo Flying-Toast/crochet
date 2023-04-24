@@ -10,7 +10,7 @@ pub enum TokenKind {
     Comma,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Token {
     kind: TokenKind,
     line: usize,
@@ -32,23 +32,41 @@ pub struct TokenStream<'a> {
     source: &'a [u8],
     line: usize,
     col: usize,
+    peeked_token: Option<Token>,
+}
+
+impl TokenStream<'_> {
+    pub fn current_loc(&self) -> (usize, usize) {
+        match self.peeked_token {
+            Some(p) => p.source_loc(),
+            None => (self.line, self.col),
+        }
+    }
 }
 
 impl<'a> TokenStream<'a> {
+    pub fn peek(&mut self) -> Option<Token> {
+        if self.peeked_token.is_none() {
+            self.peeked_token = self.next();
+        }
+        self.peeked_token
+    }
+
     fn new(source: &'a [u8]) -> Self {
         Self {
             source,
             line: 1,
             col: 1,
+            peeked_token: None,
         }
     }
 
-    fn peek(&self) -> Option<u8> {
+    fn peek_char(&self) -> Option<u8> {
         self.source.get(0).cloned()
     }
 
     fn next_char(&mut self) -> Option<u8> {
-        if let ret @ Some(ch) = self.peek() {
+        if let ret @ Some(ch) = self.peek_char() {
             if ch == b'\n' {
                 self.line += 1;
                 self.col = 1;
@@ -92,7 +110,7 @@ impl<'a> TokenStream<'a> {
             (b',', TokenKind::Comma),
         ];
 
-        let next = self.peek()?;
+        let next = self.peek_char()?;
 
         for (ch, tok) in symbol_tokens {
             if ch == next {
@@ -125,7 +143,7 @@ impl<'a> TokenStream<'a> {
     }
 
     fn eat_whitespace(&mut self) {
-        while matches!(self.peek(), Some(b' ' | b'\t')) {
+        while matches!(self.peek_char(), Some(b' ' | b'\t')) {
             self.next_char();
         }
     }
@@ -136,7 +154,7 @@ impl<'a> TokenStream<'a> {
 
         let start = self.source;
         let mut num_digits = 0;
-        while let Some(b'0'..=b'9') = self.peek() {
+        while let Some(b'0'..=b'9') = self.peek_char() {
             self.next_char();
             num_digits += 1;
         }
@@ -162,6 +180,10 @@ impl<'a> Iterator for TokenStream<'a> {
     type Item = Token;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.peeked_token.is_some() {
+            return self.peeked_token.take();
+        }
+
         let lexers = [Self::lex_symbol, Self::lex_keyword, Self::lex_number];
 
         self.eat_whitespace();
