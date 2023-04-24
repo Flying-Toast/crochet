@@ -84,7 +84,13 @@ impl std::fmt::Display for Instruction {
 pub fn parse_rounds(source: &str) -> Result<Vec<Instruction>, (usize, usize)> {
     let mut ts = lex::tokenize(source);
 
-    parse::parse(&mut ts)
+    let res = parse::parse(&mut ts);
+
+    if ts.is_empty() {
+        res
+    } else {
+        Err(ts.current_loc())
+    }
 }
 
 #[cfg(test)]

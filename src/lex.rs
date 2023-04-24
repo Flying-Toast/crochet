@@ -56,6 +56,10 @@ impl<'a> TokenStream<'a> {
         self.peek().map(|x| x.kind())
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.source.is_empty() && self.peeked_token.is_none()
+    }
+
     fn new(source: &'a [u8]) -> Self {
         Self {
             source,
