@@ -1,8 +1,10 @@
 mod lex;
 mod lint;
 mod parse;
+mod pretty_print;
 
 pub use lint::{lint_rounds, Lint};
+pub use pretty_print::pretty_format;
 
 #[derive(Debug, PartialEq, Eq)]
 pub enum Instruction {
