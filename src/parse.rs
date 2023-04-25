@@ -24,7 +24,6 @@ fn maybe_parse_suffix(ts: &mut TokenStream<'_>, inst: Instruction) -> Instructio
 
 /// Parses as many comma-separated instructions into a group as possible.
 /// Returns the group when it can't parse another instruction into the group.
-/// If the group only has one instruction, do not wrap it in a Group.
 /// Errors if it cannot parse at least one instruction.
 fn parse_group(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
     let mut insts = Vec::new();
@@ -35,11 +34,7 @@ fn parse_group(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> 
         match ts.peek_kind() {
             Some(TokenKind::Comma) => ts.next(),
             _ => {
-                if insts.len() == 1 {
-                    return Ok(insts.pop().unwrap());
-                } else {
-                    return Ok(Instruction::Group(insts));
-                }
+                return Ok(Instruction::Group(insts));
             }
         };
     }
@@ -123,7 +118,7 @@ mod tests {
         use Instruction::*;
 
         let mut ts = crate::lex::tokenize("sc\nsc 2, inc");
-        let rounds = vec![Sc, Group(vec![Repeat(Sc.into(), 2), Inc])];
+        let rounds = vec![Group(vec![Sc]), Group(vec![Repeat(Sc.into(), 2), Inc])];
         assert_eq!(parse(&mut ts), Ok(rounds));
     }
 
@@ -132,7 +127,11 @@ mod tests {
         use Instruction::*;
 
         let mut ts = crate::lex::tokenize("\n\n\nsc 2\ninc\n\nsc 123");
-        let rounds = vec![Repeat(Sc.into(), 2), Inc, Repeat(Sc.into(), 123)];
+        let rounds = vec![
+            Group(vec![Repeat(Sc.into(), 2)]),
+            Group(vec![Inc]),
+            Group(vec![Repeat(Sc.into(), 123)]),
+        ];
         assert_eq!(parse(&mut ts), Ok(rounds));
     }
 

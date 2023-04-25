@@ -145,10 +145,10 @@ mod tests {
             assert_eq!(&s2[1..], s);
         }
 
-        assert_derser("sc 1", "sc");
-        assert_derser("[ch 1] 1", "ch");
+        assert_derser("sc 1", "sc 1");
+        assert_derser("[ch 1] 1", "[ch 1] 1");
         assert_derser("[sc 3 in mr]", "sc 3 in mr");
-        assert_derser("[sc 6] in mr", "sc 6 in mr");
+        assert_derser("[sc 6] in mr", "[sc 6] in mr");
     }
 
     #[test]
