@@ -77,10 +77,13 @@ impl std::fmt::Display for Instruction {
             Sc => write!(f, "sc"),
             Inc => write!(f, "inc"),
             Dec => write!(f, "dec"),
+            // group has "in mr" suffix, needs brackets
+            IntoMagicRing(g) if matches!(g.deref(), Group(_)) => write!(f, "[{g}] in mr"),
             IntoMagicRing(i) => write!(f, "{i} in mr"),
-            Repeat(g, times) if matches!(g.deref(), Group(_)) => write!(f, "[{}] {}", g, times),
+            // group has repeat suffix, needs brackets
+            Repeat(g, times) if matches!(g.deref(), Group(_)) => write!(f, "[{g}] {times}"),
             Repeat(i, times) => write!(f, "{i} {times}"),
-            // non-repeated group doesn't need brackets
+            // non-suffixed group doesn't need brackets
             Group(g) => {
                 if !g.is_empty() {
                     write!(f, "{}", g[0])?;
@@ -131,6 +134,7 @@ mod tests {
         let sources = [
             "sc 4 in mr, inc, [sc, % hi im a comment %, inc] 2",
             "% hi again %, sc, inc, sc 2\n[inc, sc] 3",
+            "[sc, inc 2] in mr",
         ];
 
         for s in sources {
@@ -144,6 +148,7 @@ mod tests {
         assert_derser("sc 1", "sc");
         assert_derser("[ch 1] 1", "ch");
         assert_derser("[sc 3 in mr]", "sc 3 in mr");
+        assert_derser("[sc 6] in mr", "sc 6 in mr");
     }
 
     #[test]
