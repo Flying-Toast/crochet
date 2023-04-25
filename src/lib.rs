@@ -16,6 +16,7 @@ pub enum Instruction {
     IntoMagicRing(Box<Instruction>),
     Group(Vec<Instruction>),
     Repeat(Box<Instruction>, u32),
+    Comment(String),
 }
 
 impl Instruction {
@@ -38,6 +39,7 @@ impl Instruction {
             IntoMagicRing(_) => 0,
             Group(insts) => insts.iter().map(Self::input_count).sum(),
             Repeat(inst, times) => inst.input_count() * times,
+            Comment(_) => 0,
         }
     }
 
@@ -60,6 +62,7 @@ impl Instruction {
             IntoMagicRing(i) => i.output_count(),
             Group(insts) => insts.iter().map(Self::output_count).sum(),
             Repeat(inst, times) => inst.output_count() * times,
+            Comment(_) => 0,
         }
     }
 }
@@ -89,6 +92,7 @@ impl std::fmt::Display for Instruction {
 
                 Ok(())
             }
+            Comment(s) => write!(f, "% {s} %"),
         }
     }
 }
@@ -124,7 +128,10 @@ mod tests {
     #[test]
     fn test_instruction_display() {
         // these sources have an identical Display as their original source
-        let sources = ["sc 4 in mr, inc, [sc, inc] 2", "sc, inc, sc 2\n[inc, sc] 3"];
+        let sources = [
+            "sc 4 in mr, inc, [sc, % hi im a comment %, inc] 2",
+            "% hi again %, sc, inc, sc 2\n[inc, sc] 3",
+        ];
 
         for s in sources {
             let rounds = parse_rounds(s).unwrap();
@@ -137,5 +144,11 @@ mod tests {
         assert_derser("sc 1", "sc");
         assert_derser("[ch 1] 1", "ch");
         assert_derser("[sc 3 in mr]", "sc 3 in mr");
+    }
+
+    #[test]
+    fn test_unexpected_at_end_of_input() {
+        assert_eq!(crate::parse_rounds("sc 3, % foobar"), Err((1, 7)));
+        assert_eq!(crate::parse_rounds("% foobar"), Err((1, 1)));
     }
 }

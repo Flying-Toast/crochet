@@ -72,6 +72,10 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
                 None => Err(ts.current_loc()),
             }
         }
+        Comment(_) => match next.into_kind() {
+            Comment(s) => Ok(Instruction::Comment(s)),
+            _ => unreachable!(),
+        },
         RBracket | Comma | Newline | NonzeroNumber(_) | InMr => Err(next.source_loc()),
     }
 }
@@ -87,6 +91,9 @@ pub fn parse(ts: &mut TokenStream<'_>) -> Result<Vec<Instruction>, (usize, usize
     while ts.peek().is_some() {
         rounds.push(parse_group(ts)?);
 
+        if !matches!(ts.peek_kind(), Some(TokenKind::Newline)) && !ts.is_empty() {
+            return Err(ts.current_loc());
+        }
         while let Some(TokenKind::Newline) = ts.peek_kind() {
             ts.next();
         }

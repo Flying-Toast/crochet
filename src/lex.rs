@@ -10,6 +10,7 @@ pub enum TokenKind {
     LBracket,
     RBracket,
     Comma,
+    Comment(String),
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -22,6 +23,10 @@ pub struct Token {
 impl Token {
     pub fn kind(&self) -> &TokenKind {
         &self.kind
+    }
+
+    pub fn into_kind(self) -> TokenKind {
+        self.kind
     }
 
     pub fn source_loc(&self) -> (usize, usize) {
@@ -62,9 +67,9 @@ impl<'a> TokenStream<'a> {
         self.source.is_empty() && self.peeked_token.is_none()
     }
 
-    fn new(source: &'a [u8]) -> Self {
+    fn new(source: &'a str) -> Self {
         Self {
-            source,
+            source: source.trim_end().as_bytes(),
             line: 1,
             col: 1,
             peeked_token: None,
@@ -190,6 +195,46 @@ impl<'a> TokenStream<'a> {
             })
         }
     }
+
+    fn lex_comment(&mut self) -> Option<Token> {
+        if let Some(b'%') = self.peek_char() {
+            let line = self.line;
+            let col = self.col;
+            let source_before_comment = self.source;
+
+            self.next_char();
+            let beginning = self.source;
+            let mut idx = 0;
+            let mut closed = false;
+            while let Some(ch) = self.next_char() {
+                if ch == b'%' {
+                    closed = true;
+                    break;
+                }
+                idx += 1;
+            }
+
+            if !closed {
+                self.source = source_before_comment;
+                self.line = line;
+                self.col = col;
+                return None;
+            }
+
+            Some(Token {
+                kind: TokenKind::Comment(
+                    std::str::from_utf8(&beginning[..idx])
+                        .unwrap()
+                        .trim()
+                        .into(),
+                ),
+                line,
+                col,
+            })
+        } else {
+            None
+        }
+    }
 }
 
 impl<'a> Iterator for TokenStream<'a> {
@@ -200,7 +245,12 @@ impl<'a> Iterator for TokenStream<'a> {
             return self.peeked_token.take();
         }
 
-        let lexers = [Self::lex_symbol, Self::lex_keyword, Self::lex_number];
+        let lexers = [
+            Self::lex_symbol,
+            Self::lex_keyword,
+            Self::lex_number,
+            Self::lex_comment,
+        ];
 
         self.eat_whitespace();
 
@@ -215,7 +265,7 @@ impl<'a> Iterator for TokenStream<'a> {
 }
 
 pub fn tokenize<'a>(source: &'a str) -> TokenStream<'a> {
-    TokenStream::new(source.as_bytes())
+    TokenStream::new(source)
 }
 
 #[cfg(test)]
@@ -307,5 +357,14 @@ mod tests {
         ];
 
         assert_eq!(tokenize(&src).collect::<Vec<_>>(), expected);
+
+        assert_eq!(
+            tokenize("% hello there %").collect::<Vec<_>>(),
+            vec![Token {
+                kind: Comment("hello there".into()),
+                line: 1,
+                col: 1
+            }]
+        );
     }
 }
