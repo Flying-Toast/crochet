@@ -51,7 +51,7 @@ fn main() -> ExitCode {
         ExitCode::SUCCESS
     } else {
         for l in lints {
-            println!("Lint: {l}");
+            eprintln!("Lint: {l}");
         }
 
         ExitCode::FAILURE
