@@ -4,13 +4,9 @@ use crate::Instruction;
 /// Possibly modifies the given instruction, by parsing e.g. a repetition number or "in mr" after it
 fn maybe_parse_suffix(ts: &mut TokenStream<'_>, inst: Instruction) -> Instruction {
     let inst = match ts.peek_kind() {
-        Some(&TokenKind::NonzeroNumber(n)) => {
+        Some(&TokenKind::Number(n)) => {
             ts.next();
-            if n == 1 {
-                inst
-            } else {
-                Instruction::Repeat(inst.into(), n)
-            }
+            Instruction::Repeat(inst.into(), n)
         }
         _ => inst,
     };
@@ -76,7 +72,7 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
             Comment(s) => Ok(Instruction::Comment(s)),
             _ => unreachable!(),
         },
-        RBracket | Comma | Newline | NonzeroNumber(_) | InMr => Err(next.source_loc()),
+        RBracket | Comma | Newline | Number(_) | InMr => Err(next.source_loc()),
     }
 }
 

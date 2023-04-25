@@ -5,7 +5,7 @@ pub enum TokenKind {
     Inc,
     Dec,
     InMr,
-    NonzeroNumber(u32),
+    Number(u32),
     Newline,
     LBracket,
     RBracket,
@@ -171,20 +171,16 @@ impl<'a> TokenStream<'a> {
 
         let start = self.source;
         let mut num_digits = 0;
-        if let Some(b'1'..=b'9') = self.peek_char() {
+        while let Some(b'0'..=b'9') = self.peek_char() {
             self.next_char();
             num_digits += 1;
-            while let Some(b'0'..=b'9') = self.peek_char() {
-                self.next_char();
-                num_digits += 1;
-            }
         }
 
         if num_digits == 0 {
             None
         } else {
             Some(Token {
-                kind: TokenKind::NonzeroNumber(
+                kind: TokenKind::Number(
                     std::str::from_utf8(&start[..num_digits])
                         .unwrap()
                         .parse()
@@ -285,7 +281,7 @@ mod tests {
                 col: 1,
             },
             Token {
-                kind: NonzeroNumber(6),
+                kind: Number(6),
                 line: 1,
                 col: 4,
             },
@@ -300,7 +296,7 @@ mod tests {
                 col: 1,
             },
             Token {
-                kind: NonzeroNumber(6),
+                kind: Number(6),
                 line: 2,
                 col: 5,
             },
@@ -315,7 +311,7 @@ mod tests {
                 col: 1,
             },
             Token {
-                kind: NonzeroNumber(2),
+                kind: Number(2),
                 line: 3,
                 col: 4,
             },
@@ -350,7 +346,7 @@ mod tests {
                 col: 15,
             },
             Token {
-                kind: NonzeroNumber(5),
+                kind: Number(5),
                 line: 3,
                 col: 17,
             },
