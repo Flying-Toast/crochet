@@ -75,9 +75,31 @@ fn lint_mismatched_stitch_count(rounds: &[Instruction]) -> Vec<Lint> {
 
     let mut ret = Vec::new();
 
-    for i in 0..rounds.len() - 1 {
+    'outer: for i in 0..rounds.len() - 1 {
         let a_out = rounds[i].output_count();
-        let b_in = rounds[i + 1].input_count();
+        if a_out == 0 && rounds[i].input_count() == 0 {
+            // skip rounds that have 0 in and 0 out (e.g. a round of just comments)
+            continue;
+        }
+
+        let mut b_offset = 1;
+        // skip 0in0out rounds until we find a suitable b
+        let b_in = loop {
+            match rounds.get(i + b_offset) {
+                Some(possible_b) => {
+                    let incount = possible_b.input_count();
+                    if incount == 0 && possible_b.output_count() == 0 {
+                        b_offset += 1;
+                        continue;
+                    } else {
+                        break incount;
+                    }
+                }
+                // we reached the end of the `rounds` array without finding a suitable 'b' round -
+                // all rounds after the a round have 0in+0out, so a is the last real round of the pattern
+                None => break 'outer,
+            }
+        };
 
         if a_out != b_in {
             ret.push(Lint::MismatchedStitchCount {
@@ -178,6 +200,14 @@ mod tests {
             sc 6 in mr
             [sc, inc, sc]2
             [inc, sc] 4
+            ",
+        );
+
+        no_lints(
+            "
+            ch 12
+            % comment %
+            sc 12
             ",
         );
     }
