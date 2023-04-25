@@ -109,8 +109,21 @@ pub fn parse_rounds(source: &str) -> Result<Vec<Instruction>, (usize, usize)> {
 mod tests {
     use super::*;
 
+    /// assert source->deserialize->serialize is the equal to `displayed`
+    fn assert_derser(source: &str, displayed: &str) {
+        assert_eq!(
+            parse_rounds(source)
+                .unwrap()
+                .iter()
+                .map(ToString::to_string)
+                .collect::<String>(),
+            displayed
+        );
+    }
+
     #[test]
     fn test_instruction_display() {
+        // these sources have an identical Display as their original source
         let sources = ["sc 4 in mr, inc, [sc, inc] 2", "sc, inc, sc 2\n[inc, sc] 3"];
 
         for s in sources {
@@ -120,5 +133,9 @@ mod tests {
             let s2 = rounds.collect::<String>();
             assert_eq!(&s2[1..], s);
         }
+
+        assert_derser("sc 1", "sc");
+        assert_derser("[ch 1] 1", "ch");
+        assert_derser("[sc 3 in mr]", "sc 3 in mr");
     }
 }
