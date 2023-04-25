@@ -4,7 +4,7 @@ use crate::Instruction;
 /// Possibly modifies the given instruction, by parsing e.g. a repetition number or "in mr" after it
 fn maybe_parse_suffix(ts: &mut TokenStream<'_>, inst: Instruction) -> Instruction {
     let inst = match ts.peek_kind() {
-        Some(TokenKind::NonzeroNumber(n)) => {
+        Some(&TokenKind::NonzeroNumber(n)) => {
             ts.next();
             if n == 1 {
                 inst
@@ -67,7 +67,7 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
             let group = parse_group(ts)?;
 
             match ts.next() {
-                Some(t) if t.kind() == RBracket => Ok(maybe_parse_suffix(ts, group)),
+                Some(t) if t.kind() == &RBracket => Ok(maybe_parse_suffix(ts, group)),
                 Some(unexpected) => Err(unexpected.source_loc()),
                 None => Err(ts.current_loc()),
             }

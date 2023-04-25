@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq)]
 pub enum TokenKind {
     Ch,
     Sc,
@@ -12,7 +12,7 @@ pub enum TokenKind {
     Comma,
 }
 
-#[derive(Debug, PartialEq, Eq, Copy, Clone)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Token {
     kind: TokenKind,
     line: usize,
@@ -20,8 +20,8 @@ pub struct Token {
 }
 
 impl Token {
-    pub fn kind(&self) -> TokenKind {
-        self.kind
+    pub fn kind(&self) -> &TokenKind {
+        &self.kind
     }
 
     pub fn source_loc(&self) -> (usize, usize) {
@@ -39,7 +39,7 @@ pub struct TokenStream<'a> {
 
 impl TokenStream<'_> {
     pub fn current_loc(&self) -> (usize, usize) {
-        match self.peeked_token {
+        match &self.peeked_token {
             Some(p) => p.source_loc(),
             None => (self.line, self.col),
         }
@@ -47,14 +47,14 @@ impl TokenStream<'_> {
 }
 
 impl<'a> TokenStream<'a> {
-    pub fn peek(&mut self) -> Option<Token> {
+    pub fn peek(&mut self) -> Option<&Token> {
         if self.peeked_token.is_none() {
             self.peeked_token = self.next();
         }
-        self.peeked_token
+        self.peeked_token.as_ref()
     }
 
-    pub fn peek_kind(&mut self) -> Option<TokenKind> {
+    pub fn peek_kind(&mut self) -> Option<&TokenKind> {
         self.peek().map(|x| x.kind())
     }
 
