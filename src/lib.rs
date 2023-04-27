@@ -10,7 +10,11 @@ pub use pretty_print::pretty_format;
 pub enum Instruction {
     Ch,
     Sc,
+    Bpsc,
+    Blsc,
     Inc,
+    Flinc,
+    Blinc,
     Dec,
     /// Do the given instruction into a magic ring
     IntoMagicRing(Box<Instruction>),
@@ -33,8 +37,8 @@ impl Instruction {
 
         match self {
             Ch => 0,
-            Sc => 1,
-            Inc => 1,
+            Sc | Bpsc | Blsc => 1,
+            Inc | Flinc | Blinc => 1,
             Dec => 2,
             IntoMagicRing(_) => 0,
             Group(insts) => insts.iter().map(Self::input_count).sum(),
@@ -56,8 +60,8 @@ impl Instruction {
 
         match self {
             Ch => 1,
-            Sc => 1,
-            Inc => 2,
+            Sc | Bpsc | Blsc => 1,
+            Inc | Flinc | Blinc => 2,
             Dec => 1,
             IntoMagicRing(i) => i.output_count(),
             Group(insts) => insts.iter().map(Self::output_count).sum(),
@@ -75,7 +79,11 @@ impl std::fmt::Display for Instruction {
         match self {
             Ch => write!(f, "ch"),
             Sc => write!(f, "sc"),
+            Bpsc => write!(f, "bpsc"),
+            Blsc => write!(f, "blsc"),
             Inc => write!(f, "inc"),
+            Flinc => write!(f, "flinc"),
+            Blinc => write!(f, "blinc"),
             Dec => write!(f, "dec"),
             // group has "in mr" suffix, needs brackets
             IntoMagicRing(g) if matches!(g.deref(), Group(_)) => write!(f, "[{g}] in mr"),

@@ -52,7 +52,11 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
     match next.kind() {
         Ch => Ok(maybe_parse_suffix(ts, Instruction::Ch)),
         Sc => Ok(maybe_parse_suffix(ts, Instruction::Sc)),
+        Bpsc => Ok(maybe_parse_suffix(ts, Instruction::Bpsc)),
+        Blsc => Ok(maybe_parse_suffix(ts, Instruction::Blsc)),
         Inc => Ok(maybe_parse_suffix(ts, Instruction::Inc)),
+        Flinc => Ok(maybe_parse_suffix(ts, Instruction::Flinc)),
+        Blinc => Ok(maybe_parse_suffix(ts, Instruction::Blinc)),
         Dec => Ok(maybe_parse_suffix(ts, Instruction::Dec)),
         LBracket => {
             let group = parse_group(ts)?;
