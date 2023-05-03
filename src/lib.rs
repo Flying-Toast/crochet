@@ -10,6 +10,7 @@ pub use pretty_print::pretty_format;
 pub enum Instruction {
     Ch,
     Sc,
+    Fpsc,
     Bpsc,
     Blsc,
     Inc,
@@ -37,7 +38,7 @@ impl Instruction {
 
         match self {
             Ch => 0,
-            Sc | Bpsc | Blsc => 1,
+            Sc | Fpsc | Bpsc | Blsc => 1,
             Inc | Flinc | Blinc => 1,
             Dec => 2,
             IntoMagicRing(_) => 0,
@@ -60,7 +61,7 @@ impl Instruction {
 
         match self {
             Ch => 1,
-            Sc | Bpsc | Blsc => 1,
+            Sc | Fpsc | Bpsc | Blsc => 1,
             Inc | Flinc | Blinc => 2,
             Dec => 1,
             IntoMagicRing(i) => i.output_count(),
@@ -79,6 +80,7 @@ impl std::fmt::Display for Instruction {
         match self {
             Ch => write!(f, "ch"),
             Sc => write!(f, "sc"),
+            Fpsc => write!(f, "fpsc"),
             Bpsc => write!(f, "bpsc"),
             Blsc => write!(f, "blsc"),
             Inc => write!(f, "inc"),

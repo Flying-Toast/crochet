@@ -52,6 +52,7 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
     match next.kind() {
         Ch => Ok(maybe_parse_suffix(ts, Instruction::Ch)),
         Sc => Ok(maybe_parse_suffix(ts, Instruction::Sc)),
+        Fpsc => Ok(maybe_parse_suffix(ts, Instruction::Fpsc)),
         Bpsc => Ok(maybe_parse_suffix(ts, Instruction::Bpsc)),
         Blsc => Ok(maybe_parse_suffix(ts, Instruction::Blsc)),
         Inc => Ok(maybe_parse_suffix(ts, Instruction::Inc)),

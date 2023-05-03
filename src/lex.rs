@@ -2,6 +2,7 @@
 pub enum TokenKind {
     Ch,
     Sc,
+    Fpsc,
     Bpsc,
     Blsc,
     Inc,
@@ -147,6 +148,7 @@ impl<'a> TokenStream<'a> {
             (b"in mr".as_ref(), TokenKind::InMr),
             (b"blinc".as_ref(), TokenKind::Blinc),
             (b"flinc".as_ref(), TokenKind::Flinc),
+            (b"fpsc".as_ref(), TokenKind::Fpsc),
             (b"bpsc".as_ref(), TokenKind::Bpsc),
             (b"blsc".as_ref(), TokenKind::Blsc),
             (b"inc".as_ref(), TokenKind::Inc),
