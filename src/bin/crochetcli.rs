@@ -45,15 +45,15 @@ fn main() -> ExitCode {
 
     let lints = crochet::lint_rounds(&rounds);
 
-    if lints.is_empty() {
-        println!("{}", crochet::pretty_format(&rounds));
+    for l in lints.iter() {
+        eprintln!("Lint: {l}");
+    }
 
+    println!("{}", crochet::pretty_format(&rounds));
+
+    if lints.is_empty() {
         ExitCode::SUCCESS
     } else {
-        for l in lints {
-            eprintln!("Lint: {l}");
-        }
-
         ExitCode::FAILURE
     }
 }
