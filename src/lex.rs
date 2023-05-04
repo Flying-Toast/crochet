@@ -16,6 +16,7 @@ pub enum TokenKind {
     RBracket,
     Comma,
     Comment(String),
+    Skip,
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -155,6 +156,7 @@ impl<'a> TokenStream<'a> {
             (b"dec".as_ref(), TokenKind::Dec),
             (b"sc".as_ref(), TokenKind::Sc),
             (b"ch".as_ref(), TokenKind::Ch),
+            (b"skip".as_ref(), TokenKind::Skip),
         ];
         keywords.sort_by_key(|(x, _)| x.len());
         keywords.reverse();

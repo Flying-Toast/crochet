@@ -72,6 +72,13 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
             Comment(s) => Ok(Instruction::Comment(s)),
             _ => unreachable!(),
         },
+        Skip => match ts.next() {
+            Some(t) => match t.kind() {
+                &Number(n) => Ok(Instruction::Skip(n)),
+                _ => Err(t.source_loc()),
+            },
+            None => Err(ts.current_loc()),
+        },
         RBracket | Comma | Newline | Number(_) | InMr => Err(next.source_loc()),
     }
 }
@@ -144,5 +151,11 @@ mod tests {
     fn test_unexpected_token() {
         let mut ts = crate::lex::tokenize("\nsc 2, ]");
         assert_eq!(parse(&mut ts), Err((2, 7)));
+    }
+
+    #[test]
+    fn test_skip_must_have_count() {
+        let mut ts = crate::lex::tokenize("sc, skip, sc");
+        assert_eq!(parse(&mut ts), Err((1, 9)));
     }
 }

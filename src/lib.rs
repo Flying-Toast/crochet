@@ -22,6 +22,7 @@ pub enum Instruction {
     Group(Vec<Instruction>),
     Repeat(Box<Instruction>, u32),
     Comment(String),
+    Skip(u32),
 }
 
 impl Instruction {
@@ -45,6 +46,7 @@ impl Instruction {
             Group(insts) => insts.iter().map(Self::input_count).sum(),
             Repeat(inst, times) => inst.input_count() * times,
             Comment(_) => 0,
+            Skip(n) => *n,
         }
     }
 
@@ -68,6 +70,7 @@ impl Instruction {
             Group(insts) => insts.iter().map(Self::output_count).sum(),
             Repeat(inst, times) => inst.output_count() * times,
             Comment(_) => 0,
+            Skip(_) => 0,
         }
     }
 }
@@ -106,6 +109,7 @@ impl std::fmt::Display for Instruction {
                 Ok(())
             }
             Comment(s) => write!(f, "% {s} %"),
+            Skip(n) => write!(f, "skip {n}"),
         }
     }
 }

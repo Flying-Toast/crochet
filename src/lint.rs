@@ -210,5 +210,12 @@ mod tests {
             sc 12
             ",
         );
+
+        no_lints(
+            "
+            sc 10 in mr
+            skip 2, sc, skip 2, sc 5
+            "
+            );
     }
 }
