@@ -7,7 +7,7 @@ pub use lint::{lint_rounds, Lint};
 pub use pretty_print::pretty_format;
 
 #[derive(Debug, PartialEq, Eq)]
-pub enum Instruction {
+pub enum Instruction<'a> {
     Ch,
     Sc,
     Fpsc,
@@ -18,14 +18,14 @@ pub enum Instruction {
     Blinc,
     Dec,
     /// Do the given instruction into a magic ring
-    IntoMagicRing(Box<Instruction>),
-    Group(Vec<Instruction>),
-    Repeat(Box<Instruction>, u32),
-    Comment(String),
+    IntoMagicRing(Box<Instruction<'a>>),
+    Group(Vec<Instruction<'a>>),
+    Repeat(Box<Instruction<'a>>, u32),
+    Comment(&'a str),
     Skip(u32),
 }
 
-impl Instruction {
+impl Instruction<'_> {
     /// How many stitches this instruction consumes.
     ///
     /// Example:
@@ -75,7 +75,7 @@ impl Instruction {
     }
 }
 
-impl std::fmt::Display for Instruction {
+impl std::fmt::Display for Instruction<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use std::ops::Deref;
         use Instruction::*;

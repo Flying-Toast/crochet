@@ -1,5 +1,5 @@
 #[derive(Debug, PartialEq, Eq)]
-pub enum TokenKind {
+pub enum TokenKind<'a> {
     Ch,
     Sc,
     Fpsc,
@@ -15,23 +15,23 @@ pub enum TokenKind {
     LBracket,
     RBracket,
     Comma,
-    Comment(String),
+    Comment(&'a str),
     Skip,
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub struct Token {
-    kind: TokenKind,
+pub struct Token<'a> {
+    kind: TokenKind<'a>,
     line: usize,
     col: usize,
 }
 
-impl Token {
-    pub fn kind(&self) -> &TokenKind {
+impl<'a> Token<'a> {
+    pub fn kind(&self) -> &TokenKind<'a> {
         &self.kind
     }
 
-    pub fn into_kind(self) -> TokenKind {
+    pub fn into_kind(self) -> TokenKind<'a> {
         self.kind
     }
 
@@ -45,7 +45,7 @@ pub struct TokenStream<'a> {
     source: &'a [u8],
     line: usize,
     col: usize,
-    peeked_token: Option<Token>,
+    peeked_token: Option<Token<'a>>,
 }
 
 impl TokenStream<'_> {
@@ -58,14 +58,14 @@ impl TokenStream<'_> {
 }
 
 impl<'a> TokenStream<'a> {
-    pub fn peek(&mut self) -> Option<&Token> {
+    pub fn peek(&mut self) -> Option<&Token<'a>> {
         if self.peeked_token.is_none() {
             self.peeked_token = self.next();
         }
         self.peeked_token.as_ref()
     }
 
-    pub fn peek_kind(&mut self) -> Option<&TokenKind> {
+    pub fn peek_kind(&mut self) -> Option<&TokenKind<'a>> {
         self.peek().map(|x| x.kind())
     }
 
@@ -103,7 +103,7 @@ impl<'a> TokenStream<'a> {
         }
     }
 
-    fn make_token(&self, kind: TokenKind) -> Token {
+    fn make_token<'x>(&self, kind: TokenKind<'x>) -> Token<'x> {
         Token {
             kind,
             line: self.line,
@@ -123,7 +123,7 @@ impl<'a> TokenStream<'a> {
         }
     }
 
-    fn lex_symbol(&mut self) -> Option<Token> {
+    fn lex_symbol(&mut self) -> Option<Token<'a>> {
         let symbol_tokens = [
             (b'\n', TokenKind::Newline),
             (b'[', TokenKind::LBracket),
@@ -144,7 +144,7 @@ impl<'a> TokenStream<'a> {
         None
     }
 
-    fn lex_keyword(&mut self) -> Option<Token> {
+    fn lex_keyword(&mut self) -> Option<Token<'a>> {
         let mut keywords = [
             (b"in mr".as_ref(), TokenKind::InMr),
             (b"blinc".as_ref(), TokenKind::Blinc),
@@ -177,7 +177,7 @@ impl<'a> TokenStream<'a> {
         }
     }
 
-    fn lex_number(&mut self) -> Option<Token> {
+    fn lex_number(&mut self) -> Option<Token<'a>> {
         let line = self.line;
         let col = self.col;
 
@@ -204,7 +204,7 @@ impl<'a> TokenStream<'a> {
         }
     }
 
-    fn lex_comment(&mut self) -> Option<Token> {
+    fn lex_comment(&mut self) -> Option<Token<'a>> {
         if let Some(b'%') = self.peek_char() {
             let line = self.line;
             let col = self.col;
@@ -246,7 +246,7 @@ impl<'a> TokenStream<'a> {
 }
 
 impl<'a> Iterator for TokenStream<'a> {
-    type Item = Token;
+    type Item = Token<'a>;
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.peeked_token.is_some() {

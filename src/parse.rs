@@ -2,7 +2,8 @@ use crate::lex::{TokenKind, TokenStream};
 use crate::Instruction;
 
 /// Possibly modifies the given instruction, by parsing e.g. a repetition number or "in mr" after it
-fn maybe_parse_suffix(ts: &mut TokenStream<'_>, inst: Instruction) -> Instruction {
+fn maybe_parse_suffix<'a>(ts: &mut TokenStream<'a>, inst: Instruction<'a>) -> Instruction<'a>
+{
     let inst = match ts.peek_kind() {
         Some(&TokenKind::Number(n)) => {
             ts.next();
@@ -25,7 +26,7 @@ fn maybe_parse_suffix(ts: &mut TokenStream<'_>, inst: Instruction) -> Instructio
 /// Parses as many comma-separated instructions into a group as possible.
 /// Returns the group when it can't parse another instruction into the group.
 /// Errors if it cannot parse at least one instruction.
-fn parse_group(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
+fn parse_group<'a>(ts: &mut TokenStream<'a>) -> Result<Instruction<'a>, (usize, usize)> {
     let mut insts = Vec::new();
 
     loop {
@@ -41,7 +42,7 @@ fn parse_group(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> 
 }
 
 /// Errors if `ts` is empty
-fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
+fn parse_inst<'a>(ts: &mut TokenStream<'a>) -> Result<Instruction<'a>, (usize, usize)> {
     use TokenKind::*;
 
     let next = match ts.next() {
@@ -84,7 +85,7 @@ fn parse_inst(ts: &mut TokenStream<'_>) -> Result<Instruction, (usize, usize)> {
 }
 
 /// Parses a list of rounds.
-pub fn parse(ts: &mut TokenStream<'_>) -> Result<Vec<Instruction>, (usize, usize)> {
+pub fn parse<'a>(ts: &mut TokenStream<'a>) -> Result<Vec<Instruction<'a>>, (usize, usize)> {
     while let Some(TokenKind::Newline) = ts.peek_kind() {
         ts.next();
     }
