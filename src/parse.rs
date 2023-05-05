@@ -2,10 +2,9 @@ use crate::lex::{TokenKind, TokenStream};
 use crate::Instruction;
 
 /// Possibly modifies the given instruction, by parsing e.g. a repetition number or "in mr" after it
-fn maybe_parse_suffix<'a>(ts: &mut TokenStream<'a>, inst: Instruction<'a>) -> Instruction<'a>
-{
+fn maybe_parse_suffix<'a>(ts: &mut TokenStream<'a>, inst: Instruction<'a>) -> Instruction<'a> {
     let inst = match ts.peek_kind() {
-        Some(&TokenKind::Number(n)) => {
+        Some(TokenKind::Number(n)) => {
             ts.next();
             Instruction::Repeat(inst.into(), n)
         }
@@ -64,18 +63,15 @@ fn parse_inst<'a>(ts: &mut TokenStream<'a>) -> Result<Instruction<'a>, (usize, u
             let group = parse_group(ts)?;
 
             match ts.next() {
-                Some(t) if t.kind() == &RBracket => Ok(maybe_parse_suffix(ts, group)),
+                Some(t) if t.kind() == RBracket => Ok(maybe_parse_suffix(ts, group)),
                 Some(unexpected) => Err(unexpected.source_loc()),
                 None => Err(ts.current_loc()),
             }
         }
-        Comment(_) => match next.into_kind() {
-            Comment(s) => Ok(Instruction::Comment(s)),
-            _ => unreachable!(),
-        },
+        Comment(s) => Ok(Instruction::Comment(s)),
         Skip => match ts.next() {
             Some(t) => match t.kind() {
-                &Number(n) => Ok(Instruction::Skip(n)),
+                Number(n) => Ok(Instruction::Skip(n)),
                 _ => Err(t.source_loc()),
             },
             None => Err(ts.current_loc()),

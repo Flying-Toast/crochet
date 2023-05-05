@@ -1,4 +1,4 @@
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum TokenKind<'a> {
     Ch,
     Sc,
@@ -19,7 +19,7 @@ pub enum TokenKind<'a> {
     Skip,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub struct Token<'a> {
     kind: TokenKind<'a>,
     line: usize,
@@ -27,11 +27,7 @@ pub struct Token<'a> {
 }
 
 impl<'a> Token<'a> {
-    pub fn kind(&self) -> &TokenKind<'a> {
-        &self.kind
-    }
-
-    pub fn into_kind(self) -> TokenKind<'a> {
+    pub fn kind(&self) -> TokenKind<'a> {
         self.kind
     }
 
@@ -58,14 +54,14 @@ impl TokenStream<'_> {
 }
 
 impl<'a> TokenStream<'a> {
-    pub fn peek(&mut self) -> Option<&Token<'a>> {
+    pub fn peek(&mut self) -> Option<Token<'a>> {
         if self.peeked_token.is_none() {
             self.peeked_token = self.next();
         }
-        self.peeked_token.as_ref()
+        self.peeked_token
     }
 
-    pub fn peek_kind(&mut self) -> Option<&TokenKind<'a>> {
+    pub fn peek_kind(&mut self) -> Option<TokenKind<'a>> {
         self.peek().map(|x| x.kind())
     }
 
