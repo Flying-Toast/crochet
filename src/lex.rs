@@ -154,8 +154,7 @@ impl<'a> TokenStream<'a> {
             (b"ch".as_ref(), TokenKind::Ch),
             (b"skip".as_ref(), TokenKind::Skip),
         ];
-        keywords.sort_by_key(|(x, _)| x.len());
-        keywords.reverse();
+        keywords.sort_by_key(|(x, _)| std::cmp::Reverse(x.len()));
 
         for (s, tok) in keywords {
             let t = self.make_token(tok);
