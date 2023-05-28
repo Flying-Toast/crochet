@@ -9,6 +9,7 @@ pub use pretty_print::pretty_format;
 #[derive(Debug, PartialEq, Eq)]
 pub enum Instruction<'a> {
     Ch,
+    Tch,
     Sc,
     Fpsc,
     Bpsc,
@@ -39,6 +40,7 @@ impl Instruction<'_> {
 
         match self {
             Ch => 0,
+            Tch => 0,
             Sc | Fpsc | Bpsc | Blsc => 1,
             Inc | Flinc | Blinc => 1,
             Dec => 2,
@@ -63,6 +65,7 @@ impl Instruction<'_> {
 
         match self {
             Ch => 1,
+            Tch => 0,
             Sc | Fpsc | Bpsc | Blsc => 1,
             Inc | Flinc | Blinc => 2,
             Dec => 1,
@@ -82,6 +85,7 @@ impl std::fmt::Display for Instruction<'_> {
 
         match self {
             Ch => write!(f, "ch"),
+            Tch => write!(f, "tch"),
             Sc => write!(f, "sc"),
             Fpsc => write!(f, "fpsc"),
             Bpsc => write!(f, "bpsc"),

@@ -1,6 +1,7 @@
 #[derive(Debug, PartialEq, Eq, Copy, Clone)]
 pub enum TokenKind<'a> {
     Ch,
+    Tch,
     Sc,
     Fpsc,
     Bpsc,
@@ -152,6 +153,7 @@ impl<'a> TokenStream<'a> {
             (b"dec".as_ref(), TokenKind::Dec),
             (b"sc".as_ref(), TokenKind::Sc),
             (b"ch".as_ref(), TokenKind::Ch),
+            (b"tch".as_ref(), TokenKind::Tch),
             (b"skip".as_ref(), TokenKind::Skip),
         ];
         keywords.sort_by_key(|(x, _)| std::cmp::Reverse(x.len()));

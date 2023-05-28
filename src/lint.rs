@@ -182,7 +182,7 @@ mod tests {
     fn no_lints(src: &str) {
         let rounds = parse_rounds(src).unwrap();
         let lints = lint_rounds(&rounds);
-        assert_eq!(lints, Vec::new());
+        assert!(lints.is_empty());
     }
 
     #[test]
